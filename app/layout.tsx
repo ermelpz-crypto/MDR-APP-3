@@ -2,7 +2,6 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Poppins } from "next/font/google"
 import "./globals.css"
-import { ConditionalLayout } from "@/components/conditional-layout"
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -22,9 +21,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-  <html lang="en" className={`${poppins.variable} scroll-smooth`} data-scroll-behavior="smooth">
+    <html lang="en" className={`${poppins.variable} scroll-smooth`} data-scroll-behavior="smooth">
       <body className="bg-gray-100 font-sans">
-        <ConditionalLayout>{children}</ConditionalLayout>
+        {children}
       </body>
     </html>
   )
