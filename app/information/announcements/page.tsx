@@ -1,42 +1,78 @@
 "use client"
 
+import { useState, useMemo } from "react"
 
-import { useState, useEffect } from "react"
-import { createClient } from "@/lib/supabase/client"
+interface Announcement {
+  id: number
+  title: string
+  category: string
+  priority: string
+  content: string
+  image_url?: string
+  status: string
+  created_at: string
+}
 
 export default function AnnouncementsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("")
-  interface Announcement {
-    id: number
-    title: string
-    category: string
-    priority: string
-    content: string
-    image_url?: string
-    status: string
-    created_at: string
-  }
-  const [announcements, setAnnouncements] = useState<Announcement[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const supabase = createClient()
 
-  useEffect(() => {
-    fetchAnnouncements()
-  }, [])
-
-  const fetchAnnouncements = async () => {
-    setIsLoading(true)
-    try {
-      const { data, error } = await supabase.from("announcements").select("*").order("created_at", { ascending: false })
-      if (error) throw error
-      setAnnouncements(data || [])
-    } catch (error) {
-      console.error("Error fetching announcements:", error)
-    } finally {
-      setIsLoading(false)
+  const announcements: Announcement[] = useMemo(() => [
+    {
+      id: 1,
+      title: "Emergency Evacuation Drill This Saturday",
+      category: "emergency",
+      priority: "high",
+      content: "All residents are required to participate in the municipal-wide emergency evacuation drill this Saturday at 9:00 AM. This is a crucial exercise to ensure everyone knows the proper evacuation procedures.",
+      status: "active",
+      created_at: "2025-09-28T10:00:00Z"
+    },
+    {
+      id: 2,
+      title: "Disaster Preparedness Workshop - Oct 15",
+      category: "event",
+      priority: "medium",
+      content: "Join us for a comprehensive disaster preparedness workshop at the Municipal Hall on October 15th. Learn essential skills for emergency situations, including first aid, fire safety, and disaster response.",
+      status: "active",
+      created_at: "2025-09-25T14:30:00Z"
+    },
+    {
+      id: 3,
+      title: "Road Closure Due to Infrastructure Repair",
+      category: "notice",
+      priority: "medium",
+      content: "Please be advised that the main road near Barangay Centro will be closed for infrastructure repairs from October 1-5. Alternative routes are available via Barangay Rawis.",
+      status: "active",
+      created_at: "2025-09-24T08:15:00Z"
+    },
+    {
+      id: 4,
+      title: "Typhoon Season Preparation Reminder",
+      category: "emergency",
+      priority: "high",
+      content: "As we enter typhoon season, please ensure your emergency go-bags are ready. Check your supplies including food, water, flashlights, batteries, and important documents.",
+      status: "active",
+      created_at: "2025-09-22T16:45:00Z"
+    },
+    {
+      id: 5,
+      title: "Community Clean-Up Drive This Weekend",
+      category: "event",
+      priority: "low",
+      content: "Join our community clean-up drive this weekend starting at 7:00 AM. Help keep our municipality clean and safe. Volunteers will receive refreshments and community service certificates.",
+      status: "active",
+      created_at: "2025-09-20T09:00:00Z"
+    },
+    {
+      id: 6,
+      title: "New Emergency Hotline Number",
+      category: "notice",
+      priority: "high",
+      content: "Our new 24/7 emergency hotline is now active: (052) 483-5555. Save this number in your phone for immediate assistance during emergencies.",
+      status: "active",
+      created_at: "2025-09-18T11:20:00Z"
     }
-  }
+  ], [])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -106,23 +142,18 @@ export default function AnnouncementsPage() {
                   className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">All Categories</option>
-                  <option value="events">Events</option>
-                  <option value="notices">Notices</option>
-                  <option value="emergencies">Emergencies</option>
+                  <option value="event">Events</option>
+                  <option value="notice">Notices</option>
+                  <option value="emergency">Emergencies</option>
                 </select>
               </div>
             </div>
 
             {/* Announcement Cards Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {isLoading ? (
+              {announcements.length === 0 ? (
                 <div className="col-span-2 text-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                  <p className="text-muted-foreground">Loading announcements...</p>
-                </div>
-              ) : announcements.length === 0 ? (
-                <div className="col-span-2 text-center py-12">
-                  <p className="text-muted-foreground">No announcements found.</p>
+                  <p className="text-gray-600">No announcements found.</p>
                 </div>
               ) : (
                 announcements

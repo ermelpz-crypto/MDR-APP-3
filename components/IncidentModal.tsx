@@ -1,8 +1,7 @@
 "use client"
 
 import React from "react"
-import { X, Phone, Users, Stethoscope, Shield } from "lucide-react"
-import { createClient } from "@/lib/supabase/client"
+import { X, Phone, Users, Stethoscope, Shield, Building2, Flame } from "lucide-react"
 import * as Dialog from "@radix-ui/react-dialog"
 import * as ScrollArea from "@radix-ui/react-scroll-area"
 
@@ -12,73 +11,62 @@ interface HotlineModalProps {
 }
 
 const HotlineModal: React.FC<HotlineModalProps> = ({ isOpen, onClose }) => {
-  const [hotlines, setHotlines] = React.useState<any[]>([])
-  const [loading, setLoading] = React.useState(true)
-
-  React.useEffect(() => {
-    if (isOpen) {
-      fetchHotlines()
-    }
-  }, [isOpen])
-
-  const fetchHotlines = async () => {
-    try {
-      const supabase = createClient()
-      const { data, error } = await supabase
-        .from("emergency_hotlines")
-        .select("*")
-        .eq("is_active", true)
-        .order("order_index", { ascending: true })
-
-      if (error && !error.message.includes('relation "emergency_hotlines" does not exist')) {
-        throw error
-      }
-
-      if (data && data.length > 0) {
-        setHotlines(
-          data.map((hotline) => ({
-            icon: Phone,
-            name: hotline.contact_name,
-            number: hotline.phone_number,
-            department: hotline.department,
-            description: hotline.description,
-            logo: hotline.logo,
-            color: hotline.is_primary ? "bg-red-50" : "bg-blue-50",
-            iconColor: hotline.is_primary ? "text-red-600" : "text-blue-600",
-          })),
-        )
-      } else {
-        // Fallback to default hotlines
-        setHotlines([
-          {
-            icon: Shield,
-            name: "MDRRMO",
-            number: "911 / (052) 234-5678",
-            color: "bg-red-50",
-            iconColor: "text-red-600",
-          },
-          {
-            icon: Users,
-            name: "Office of the Mayor",
-            number: "(052) 123-4567",
-            color: "bg-blue-50",
-            iconColor: "text-blue-600",
-          },
-          {
-            icon: Stethoscope,
-            name: "Medical/MHO",
-            number: "(052) 345-6789",
-            color: "bg-blue-50",
-            iconColor: "text-blue-600",
-          },
-        ])
-      }
-    } catch (error) {
-      console.error("Error fetching hotlines:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const hotlines = React.useMemo(() => [
+    {
+      icon: Shield,
+      name: "MDRRMO Emergency Line",
+      department: "Municipal Disaster Risk Reduction and Management Office",
+      number: "911 / (052) 483-5555",
+      description: "24/7 Emergency Response and Disaster Management",
+      color: "bg-red-50",
+      iconColor: "text-red-600",
+    },
+    {
+      icon: Flame,
+      name: "Fire Department",
+      department: "Bureau of Fire Protection - Pio Duran",
+      number: "(052) 487-2222",
+      description: "Fire Emergency Response",
+      color: "bg-orange-50",
+      iconColor: "text-orange-600",
+    },
+    {
+      icon: Shield,
+      name: "Police Station",
+      department: "Philippine National Police - Pio Duran",
+      number: "(052) 487-3333",
+      description: "Law Enforcement and Public Safety",
+      color: "bg-blue-50",
+      iconColor: "text-blue-600",
+    },
+    {
+      icon: Stethoscope,
+      name: "Rural Health Unit",
+      department: "Municipal Health Office",
+      number: "(052) 487-4444",
+      description: "Medical Emergency and Health Services",
+      color: "bg-green-50",
+      iconColor: "text-green-600",
+    },
+    {
+      icon: Users,
+      name: "Mayor's Office",
+      department: "Office of the Municipal Mayor",
+      number: "(052) 487-1111",
+      description: "General Inquiries and Assistance",
+      color: "bg-blue-50",
+      iconColor: "text-blue-600",
+    },
+    {
+      icon: Building2,
+      name: "DSWD",
+      department: "Department of Social Welfare and Development",
+      number: "(052) 487-6666",
+      description: "Social Services and Relief Operations",
+      color: "bg-purple-50",
+      iconColor: "text-purple-600",
+    },
+  ], [])
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={onClose}>
@@ -102,47 +90,32 @@ const HotlineModal: React.FC<HotlineModalProps> = ({ isOpen, onClose }) => {
           <ScrollArea.Root className="flex-1 overflow-hidden">
             <ScrollArea.Viewport className="h-full w-full rounded">
               {/* Hotline List */}
-              {loading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#042189] mx-auto mb-4"></div>
-                  <p className="text-slate-600">Loading emergency hotlines...</p>
-                </div>
-              ) : (
-                <div className="space-y-3 text-slate-800 text-sm pr-4">
-                  {hotlines.map((hotline, index) => (
-                    <div
-                      key={index}
-                      className={`flex items-start gap-3 ${hotline.color} rounded-lg p-3 hover:shadow-md transition duration-300 border border-slate-200/50`}
-                    >
-                      {hotline.logo ? (
-                        <img
-                          src={hotline.logo || "/placeholder.svg"}
-                          alt={hotline.name}
-                          className="w-6 h-6 mt-1 rounded"
-                        />
-                      ) : (
-                        <hotline.icon className={`${hotline.iconColor} w-6 h-6 mt-1`} />
-                      )}
-                      <div className="flex-1">
-                        <p className="font-semibold text-slate-900">{hotline.name}:</p>
-                        {hotline.department && <p className="text-xs text-slate-500">{hotline.department}</p>}
-                        <div className="flex flex-wrap gap-2 mt-1">
-                          {hotline.number.split(" / ").map((num: string, numIndex: number) => (
-                            <a
-                              key={numIndex}
-                              href={`tel:${num.replace(/[^\d]/g, "")}`}
-                              className="text-[#fccf03] hover:text-[#042189] hover:underline font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[#042189] focus:ring-offset-2 rounded px-1"
-                            >
-                              {num}
-                            </a>
-                          ))}
-                        </div>
-                        {hotline.description && <p className="text-xs text-slate-600 mt-1">{hotline.description}</p>}
+              <div className="space-y-3 text-slate-800 text-sm pr-4 max-h-[400px]">
+                {hotlines.map((hotline, index) => (
+                  <div
+                    key={index}
+                    className={`flex items-start gap-3 ${hotline.color} rounded-lg p-4 hover:shadow-md transition duration-300 border border-slate-200/50`}
+                  >
+                    <hotline.icon className={`${hotline.iconColor} w-7 h-7 mt-1 flex-shrink-0`} />
+                    <div className="flex-1">
+                      <p className="font-bold text-slate-900">{hotline.name}</p>
+                      {hotline.department && <p className="text-xs text-slate-600 mb-1">{hotline.department}</p>}
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {hotline.number.split(" / ").map((num: string, numIndex: number) => (
+                          <a
+                            key={numIndex}
+                            href={`tel:${num.replace(/[^\d]/g, "")}`}
+                            className="text-[#fccf03] hover:text-[#042189] hover:underline font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-[#042189] focus:ring-offset-2 rounded px-1"
+                          >
+                            {num}
+                          </a>
+                        ))}
                       </div>
+                      {hotline.description && <p className="text-xs text-slate-600 mt-2">{hotline.description}</p>}
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+                ))}
+              </div>
             </ScrollArea.Viewport>
             <ScrollArea.Scrollbar
               className="flex select-none touch-none p-0.5 bg-slate-100 transition-colors duration-[160ms] ease-out hover:bg-slate-200 data-[orientation=vertical]:w-2.5 data-[orientation=horizontal]:flex-col data-[orientation=horizontal]:h-2.5"
@@ -159,16 +132,6 @@ const HotlineModal: React.FC<HotlineModalProps> = ({ isOpen, onClose }) => {
               <strong className="text-red-600">911</strong> immediately. Keep these numbers handy for quick access
               during emergencies.
             </p>
-          </div>
-          
-          {/* Close Button */}
-          <div className="flex justify-end mt-4">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 bg-[#042189] text-white rounded-lg hover:bg-[#fccf03] hover:text-[#042189] transition-colors focus:outline-none focus:ring-2 focus:ring-[#042189] focus:ring-offset-2"
-            >
-              Close
-            </button>
           </div>
         </Dialog.Content>
       </Dialog.Portal>
